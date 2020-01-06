@@ -3,7 +3,9 @@
 #define pinT const unsigned byte
 
 #define DEFINE_PIN(name, pin) static const unsigned byte name = pin;
+#define 
 
+DEFINE_PIN(     PIN_ARM_CTRL, 0)    // Alarm Arm (Button) Control
 DEFINE_PIN(   PIN_ARMED_INDC, 0)    // Armed LED Indicator
 DEFINE_PIN(PIN_DISARMED_INDC, 0)    // Disarmed LED Indicator
 DEFINE_PIN(  PIN_BUZZER_INDC, 0)    // Alarm (Buzzer) Indicator
