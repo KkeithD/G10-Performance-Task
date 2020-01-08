@@ -4,5 +4,12 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"pin.h": "c",
+			"board.h": "c",
+			"control.h": "c",
+			"indicator.h": "c"
+		}
+	}
 }

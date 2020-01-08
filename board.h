@@ -4,10 +4,9 @@
 
 #define INIT_PIN(name) pinMode(PIN_ ## name, PIN_MODE_ ## name);
 
-class Board {
+class __Board {
 public:
-    
-    static inline void init() {
+    void init() {
         INIT_PIN(     ARM_CTRL)
         INIT_PIN(   ARMED_INDC)
         INIT_PIN(DISARMED_INDC)
@@ -16,6 +15,15 @@ public:
         INIT_PIN(   FLOOD_SENS
     }
 
+    inline int readPin(uint8_t pin) {
+        return digitalRead(pin);
+    }
+
+    inline void readPin(uint8_t pin) {
+        digitalWrite(pin);
+    }
 }
+
+extern __Board Board;
 
 #undef INIT_PIN
