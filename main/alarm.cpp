@@ -1,12 +1,13 @@
-#include "alarm.h"
+#include "alarm.hpp"
+#include "control.hpp"
 
 void __Alarm::init() {
     m_threat = ALM_THREAT_NONE;
-    m_threat_level = ALM_LEVEL_NONE
+    m_threat_level = ALM_LEVEL_NONE;
 };
 
 void __Alarm::query() {
-    if (!Control::isArmed())
+    if (!Control.isArmed())
         return;
 };
 

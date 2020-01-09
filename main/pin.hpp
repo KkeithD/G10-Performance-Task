@@ -1,10 +1,13 @@
 #pragma once
 
+#include <stdint.h>
+
 #define pinT const uint8_t
 
 #define DEFINE_PIN(name, pin, type) static const uint8_t PIN_ ## name = pin; \
                                     static const uint8_t PIN_MODE_ ## name = type;
 #define OUT 0x0
+
 #define IN  0x1
 
 DEFINE_PIN(     ARM_CTRL, 0,  IN)    // Alarm Arm (Button) Control

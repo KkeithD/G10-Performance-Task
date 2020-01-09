@@ -1,6 +1,6 @@
 #pragma once
 
-#include "control.h"
+#include <stdint.h>
 
 #define ALM_THREAT_NONE     0x0
 #define ALM_THREAT_FLOOD    0x1
