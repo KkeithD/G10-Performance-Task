@@ -16,8 +16,11 @@ public:
     };
     
 private:
-    bool m_armed;
-    bool m_armed_changed;
+    bool   m_armed;
+    bool   m_armed_changed;
+
+    double m_light_lvl;
+    double m_light_lvl_bound;
 };
 
 extern __Control Control;
