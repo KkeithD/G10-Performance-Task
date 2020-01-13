@@ -4,10 +4,8 @@
 #include "pin.hpp"
 #include "Arduino.h"
 
-void __Indicator::update() {
-  
-    Serial.println(Control.isArmed());
-    setArmIndicator(Control.isArmed());
+void __Indicator::update(bool str) {
+    setArmIndicator(/*Control.isArmed()*/ str);
 }
 
 void __Indicator::setArmIndicator(bool isArmed) {

@@ -6,10 +6,7 @@
 
 void __Control::init() {
     m_armed = ARM_CTRL_OFF;
-    m_arm_changed = false;
-
-    m_light_lvl = 0;
-    m_light_lvl_bound = 0;
+    m_armed_changed = false;
 };
 
 void __Control::query() {
@@ -23,11 +20,6 @@ void __Control::query() {
         if (arm_ctrl_state)
            m_armed_changed = true;
     }
-
-    const double raw_light_lvl = (double) Board.readAnalogPin(PIN_MOTION_SENS);
-    if (raw_light_lvl > raw_light_lvl_bounds)
-        raw_light_lvl_bounds = raw_light_lvl;
-    m_light_lvl = raw_light_lvl / raw_light_lvl_bounds;
 };
 
 __Control Control;

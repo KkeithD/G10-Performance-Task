@@ -3,7 +3,7 @@
 class __Indicator {
 public:
 
-    void update();
+    void update(bool str);
 
 private:
     void setArmIndicator(bool isArmed);
