@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <pins_arduino.h>
 
-#define pinT const uint8_t
-
 #define DEFINE_PIN(name, pin, type) static const uint8_t PIN_ ## name = pin; \
                                     static const uint8_t PIN_MODE_ ## name = type;
 #define OUT 0x1

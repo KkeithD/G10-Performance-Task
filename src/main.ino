@@ -12,6 +12,7 @@ void setup() {
 	Board.init();
 	Control.init();
 	Alarm.init();
+	System::initialize();
  //pinMode(13, INPUT);
 };
 
@@ -19,7 +20,7 @@ void loop() {
   	// put your main code here, to run repeatedly:
 	Control.query();
 bool threat;
-    queryMotionThreat(threat);
+    queryMotionSensor(threat);
     if (threat == 1)
     Serial.println(threat);
   

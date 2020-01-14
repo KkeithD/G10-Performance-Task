@@ -13,20 +13,10 @@
 #define ALM_ARMED           true
 #define ARM_DISARMED        false
 
-class __Alarm {
-public:
+void initAlarm();
 
-    void init();
+void query();
 
-    void query();
+inline uint8_t getThreat();
 
-    inline uint8_t getThreat();
-
-    inline uint8_t getThreatLevel();
-
-private:
-    uint8_t m_threat;
-    uint8_t m_threat_level;
-};
-
-extern __Alarm Alarm;
+inline uint8_t getThreatLevel();
