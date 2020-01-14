@@ -2,16 +2,13 @@
 
 #include <stdlib.h>
 
-#include "sensor.hpp"
 #include "settings.hpp"
-#include "pin.hpp"
+#include "sensor.hpp"
 #include "system.hpp"
+#include "pin.hpp"
 
 double _last_light_lvl;
 double _light_lvl;
-
-double 
-
 
 void initSensors() {
     _last_light_lvl = 0;
@@ -20,8 +17,7 @@ void initSensors() {
 
 bool getMotionThreat() {
     _last_light_lvl = _light_lvl;
-    _light_lvl = (double) readAnalogBoardPin(PIN_MOTION_SENS);
-    
+    _light_lvl = (double) System::readAnalogPin(PIN_MOTION_SENS);
     return abs(_light_lvl-_last_light_lvl) > SETTINGS_MOTION_THRESH;
 };
 

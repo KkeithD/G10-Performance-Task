@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <arduino.h>
 
-#include "graphics.dat"
+#include "graphics.hpp"
 
 #define SYS_STATE_INIT            0x0
 #define SYS_STATE_NEUTRAL         0x1
@@ -21,15 +21,19 @@
 #define SYS_THREAT_LEVEL_IMMINENT 0x2
 
 namespace System {
-    inline int readBoardPin(uint8_t pin) {
+    inline uint64_t getTime() {
+        return millis();
+    }
+
+    inline int readPin(uint8_t pin) {
         return digitalRead(pin);
     };
 
-    inline int readAnalogBoardPin(uint8_t pin) {
+    inline int readAnalogPin(uint8_t pin) {
         return analogRead(pin);
     };
 
-    inline void writeBoardPin(uint8_t pin, uint8_t data) {
+    inline void writePin(uint8_t pin, uint8_t data) {
         digitalWrite(pin, data);
     };
 
@@ -52,25 +56,21 @@ namespace System {
     inline void writeConsole(char* data) {
         Serial.print(data);
     };
-    
-    inline void writeConsole(std::string data) {
-        Serial.print(data.data());
-    };    
+
+    void writeGraphic(uint8_t graphic_type);
 
     char* getConsoleData();
 
     inline bool hasConsoleData() {
-        return Serial.available();
+        return Serial.available() > 0;
     };
 
     inline void flushConsole(bool full_flush) {
         if (full_flush)
             writeConsole(SYS_CONSOLE_FLUSH);
-        } else 
+        else 
             writeGraphic(SYS_GRAPHIC_TYPE_EMPTY);
     };
-
-    void writeGraphic(uint8_t graphic_type);
 };
 
 

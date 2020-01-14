@@ -1,18 +1,6 @@
 #pragma once
 
-// 32 columns x 120 rows, 
-
-#define SYS_CONSOLE_FLUSH "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" // TODO: Figure out how many newlines it takes to flush the console
-
-#define SYS_GRAPHIC_TYPE_EMPTY    0x0;
-#define SYS_GRAPHIC_TYPE_INIT     0x1;
-#define SYS_GRAPHIC_TYPE_WELCOME  0x2;
-#define SYS_GRAPHIC_TYPE_ARMED    0x3;
-#define SYS_GRAPHIC_TYPE_DISARMED 0x4;
-#define SYS_GRAPHIC_TYPE_THREAT   0x5;
-#define SYS_GRAPHIC_TYPE_INTRUDER 0x6;
-#define SYS_GRAPHIC_TYPE_FLOOD    0x7;
-
+const char* SYS_CONSOLE_FLUSH = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 
 const char* SYS_GRAPHIC_CALIBRATION = 
 R"(+=====================================================================================================================>

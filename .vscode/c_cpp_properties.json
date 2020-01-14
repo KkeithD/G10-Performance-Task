@@ -6,7 +6,9 @@
                 "C:\\Program Files (x86)\\Arduino\\tools\\**",
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
                 "${workspaceFolder}\\**",
-                "${workspaceFolder}\\src\\**"
+                "${workspaceFolder}\\src\\**",
+                "${workspaceFolder}\\lib\\**",
+                "${workspaceFolder}\\secure\\**"
             ],
             "forcedInclude": [
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"

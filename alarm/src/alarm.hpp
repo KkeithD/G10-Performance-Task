@@ -15,8 +15,4 @@
 
 void initAlarm();
 
-void query();
-
-inline uint8_t getThreat();
-
-inline uint8_t getThreatLevel();
+void playAlarmTone(uint32_t freq, uint32_t ms);

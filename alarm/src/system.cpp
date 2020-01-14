@@ -1,18 +1,21 @@
-#include <lib/sha256/sha256.hpp>
 #include <arduino.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "graphics.dat"
+#include "../lib/sha256/sha256.hpp"
+
+#include "graphics.hpp"
 
 #include "pass_sha.hpp"
 #include "system.hpp"
+#include "alarm.hpp"
 #include "sensor.hpp"
 #include "pin.hpp"
 
 #define INITIALIZE_PIN(name) pinMode(PIN_ ## name, PIN_MODE_ ## name);
 
-const uint8_t _sys_pass[SHA256_BLOCK_SIZE];
-Sha256        _sys_sha256_inst;
+uint8_t*      _sys_pass;
+Sha256*       _sys_sha256_inst;
 
 uint8_t       _sys_state;
 uint8_t       _sys_threat_state;
@@ -37,21 +40,28 @@ namespace System {
         flushConsole(true);
         writeConsole(SYS_GRAPHIC_CALIBRATION);
 
+        uint64_t init_time = getTime();
         while (true) {
             while (!hasConsoleData()) {
-                queryMotionSensor(); // Calibrate sensors
-                queryFloodSensor();
+                getMotionThreat(); // Calibrate sensors
+                getFloodThreat();
             }
-           
-            if (strcmp('start', getConsoleData() == 0)
-                break;
         }
+        init_time = getTime() - init_time;
 
         flushConsole(true);
         writeGraphic(SYS_GRAPHIC_TYPE_INIT);
         
+        if (init_time < 3000) {
+            for (int i=0; i<3; i++) {
+                uint64_t time_now = getTime();
+                playAlarmTone(5000, 0);
+                while (getTime() - time_now)
+
+        }
+
         for (int i=0; i<3; i++) {
-            
+            writeConsole("DONE\n");
         }
     };
 
@@ -99,16 +109,23 @@ namespace System {
     };
 
     char* getConsoleData() {
-        std::string data = ""; //TODO: use low level funcs instead of standard lib
+        char* data = new char[0]; //TODO: use low level funcs instead of standard lib
 
+        int len = 0;
         while (hasConsoleData()) {
-            const char data_in = (char) Serial.read();
-            if (data_in == '\n')
-                break;
-            else
-                data += data_in;
+            const char in_char = (char) Serial.read();
+
+            len++;
+            Serial.println(in_char);
+            char* new_data = new char[len];
+            
+            strcpy(new_data, data);
+            new_data[len-1] = in_char;
+            
+            delete data;
+            data = new_data;
         }
-        
-        return data.data();
+        Serial.println(len);
+        return data;
     };
 };
