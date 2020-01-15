@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
-void initSensors();
+void initializeSensors();
+
+void calibrateSensors();
 
 bool getMotionThreat();
 

@@ -10,9 +10,14 @@
 double _last_light_lvl;
 double _light_lvl;
 
-void initSensors() {
+void initializeSensors() {
     _last_light_lvl = 0;
     _light_lvl = 0;
+};
+
+void calibrateSensors() {
+    getMotionThreat();
+    getFloodThreat();
 };
 
 bool getMotionThreat() {

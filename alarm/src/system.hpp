@@ -59,9 +59,13 @@ namespace System {
 
     void writeGraphic(uint8_t graphic_type);
 
-    char* getConsoleData();
+    void readConsoleMsg();
 
-    inline bool hasConsoleData() {
+    char* getConsoleMsg();
+
+    bool hasConsoleMsg();
+
+    inline bool hasConsoleByte() {
         return Serial.available() > 0;
     };
 
