@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-
+#include "pin.hpp"
 #include <arduino.h>
 
 #define ALM_THREAT_NONE     0x0

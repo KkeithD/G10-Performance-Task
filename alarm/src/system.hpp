@@ -57,6 +57,10 @@ namespace System {
         Serial.print(data);
     };
 
+    inline void writeConsole(const __FlashStringHelper *  data) {
+        Serial.print(data);
+    };
+
     void writeGraphic(uint8_t graphic_type);
 
     void readConsoleMsg();
@@ -65,13 +69,15 @@ namespace System {
 
     bool hasConsoleMsg();
 
+    void flushConsoleMsg();
+
     inline bool hasConsoleByte() {
         return Serial.available() > 0;
     };
 
     inline void flushConsole(bool full_flush) {
         if (full_flush)
-            writeConsole(SYS_CONSOLE_FLUSH);
+            writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_FLUSH);
         else 
             writeGraphic(SYS_GRAPHIC_TYPE_EMPTY);
     };

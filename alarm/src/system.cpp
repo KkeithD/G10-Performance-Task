@@ -1,4 +1,6 @@
 #include <arduino.h>
+#include <avr/pgmspace.h>
+
 #include <string.h>
 #include <stdint.h>
 
@@ -8,6 +10,7 @@
 
 #include "pass_sha.hpp"
 #include "system.hpp"
+#include "settings.hpp"
 #include "alarm.hpp"
 #include "sensor.hpp"
 #include "pin.hpp"
@@ -24,6 +27,21 @@ uint8_t       _sys_threat_level;
 char*         _sys_msg;
 uint8_t       _sys_msg_len;
 bool          _sys_msg_ready;
+/*
+#include <stdarg.h>
+// https://playground.arduino.cc/Main/Printf/
+void p(const __FlashStringHelper *fmt, ... ){
+  char buf[128]; // resulting string limited to 128 chars
+  va_list args;
+  va_start (args, fmt);
+#ifdef __AVR__
+  vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args); // progmem for AVR
+#else
+  vsnprintf(buf, sizeof(buf), (const char *)fmt, args); // for the rest of the world
+#endif
+  va_end(args);
+  Serial.print(buf);
+};*/
 
 namespace System {
     void initialize() {
@@ -45,21 +63,22 @@ namespace System {
         _sys_msg_len = 0;
         _sys_msg_ready = false;
 
-
-        flushConsole(true);
-        writeConsole(SYS_GRAPHIC_CALIBRATION);
+        writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_CALIB);
 
         uint64_t init_time = getTime();
         while (true) {
-            while (!hasConsoleData()) {
+            while (!hasConsoleMsg()) {
                 calibrateSensors();
+                readConsoleMsg();
             }
-
-            if (memcmp('start') == 0
+            writeConsole(getConsoleMsg());
+            if (_sys_msg_len == 5 && memcmp("start", getConsoleMsg(), 5) == 0)
+                break;
+            flushConsoleMsg();
         }
         init_time = getTime() - init_time;
 
-        flushConsole(true);
+        //flushConsole(true);
         writeGraphic(SYS_GRAPHIC_TYPE_INIT);
 
 //========================================================
@@ -76,7 +95,7 @@ namespace System {
             playTone(147, 250); delay(50);//F#3
             playTone(185, 250); delay(45);//F#3
 
-            flushConsole(true);
+            //flushConsole(true);
             writeGraphic(SYS_GRAPHIC_TYPE_WELCOME);
 
             playTone(220, 250);
@@ -119,18 +138,19 @@ namespace System {
     };
 
     void writeGraphic(uint8_t graphic_type) {
-        writeConsole(SYS_CONSOLE_FLUSH);
-        writeConsole(SYS_GRAPHIC_BASE_TOP);
-            switch(graphic_type) {
-                case    SYS_GRAPHIC_TYPE_EMPTY: writeConsole(SYS_GRAPHIC_TEXT_NONE); break;
-                case     SYS_GRAPHIC_TYPE_INIT: writeConsole(SYS_GRAPHIC_TEXT_INIT); break;
-                case  SYS_GRAPHIC_TYPE_WELCOME: writeConsole(SYS_GRAPHIC_TEXT_WELCOME); break;
-                case    SYS_GRAPHIC_TYPE_ARMED: writeConsole(SYS_GRAPHIC_TEXT_ARMED); break;
-                case SYS_GRAPHIC_TYPE_DISARMED: writeConsole(SYS_GRAPHIC_TEXT_DISARMED); break;
-                case SYS_GRAPHIC_TYPE_INTRUDER: writeConsole(SYS_GRAPHIC_TEXT_INIT); break;
-                case    SYS_GRAPHIC_TYPE_FLOOD: writeConsole(SYS_GRAPHIC_TEXT_FLOOD); break;
-            }
-        writeConsole(SYS_GRAPHIC_BASE_BOTTOM);
+        writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_FLUSH);
+        writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_BASE_TOP);
+        switch(graphic_type) {
+            case    SYS_GRAPHIC_TYPE_CALIB: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_CALIB); break;
+            case    SYS_GRAPHIC_TYPE_EMPTY: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_EMPTY); break;
+            case     SYS_GRAPHIC_TYPE_INIT: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_INIT); break;
+            case  SYS_GRAPHIC_TYPE_WELCOME: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_WELCOME); break;
+            case    SYS_GRAPHIC_TYPE_ARMED: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_ARMED); break;
+            case SYS_GRAPHIC_TYPE_DISARMED: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_DISARMED); break;
+            case SYS_GRAPHIC_TYPE_INTRUDER: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_INIT); break;
+            case    SYS_GRAPHIC_TYPE_FLOOD: writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_TEXT_FLOOD); break;
+        }
+        writeConsole((const __FlashStringHelper *) SYS_GRAPHIC_BASE_BOTTOM);
     };
 
     void readConsoleMsg() {
