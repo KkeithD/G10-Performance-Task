@@ -49,9 +49,6 @@ R"(| |                  WELCOME                   | |)";
 static const char SYS_GRAPHIC_BANNER_INIT[] PROGMEM =
 R"(| |               INITIALIZING...              | |)";
 
-static const char SYS_GRAPHIC_BANNER_ARMED[] PROGMEM =
-R"(| |                ALARM ARMED                 | |)";
-
 static const char SYS_GRAPHIC_BANNER_ARMING0[] PROGMEM =
 R"(| |                   ARMING                   | |)";
 
@@ -59,13 +56,21 @@ static const char SYS_GRAPHIC_BANNER_ARMING1[] PROGMEM =
 R"(| |                  ARMING.                   | |)";
 
 static const char SYS_GRAPHIC_BANNER_ARMING2[] PROGMEM =
-R"(| |                 ARMING..                   | |)";
+R"(| |                  ARMING..                  | |)";
 
 static const char SYS_GRAPHIC_BANNER_ARMING3[] PROGMEM =
-R"(| |                ARMING...                   | |)";
+R"(| |                 ARMING...                  | |)";
+
+static const char SYS_GRAPHIC_BANNER_CANCELLED[] PROGMEM =
+R"(| |              ARMING CANCELLED              | |)"; 
+
+static const char SYS_GRAPHIC_BANNER_ARMED[] PROGMEM =
+R"(| |                ALARM ARMED                 | |)";
 
 static const char SYS_GRAPHIC_BANNER_DISARMED[]PROGMEM =
 R"(| |               DISARMED ALARM               | |)";
+
+
 
 static const char SYS_GRAPHIC_ALERT_EMPTY[] PROGMEM =
 R"(| |                                            | |
@@ -87,11 +92,3 @@ static const char SYS_GRAPHIC_ALERT_MOTION[] PROGMEM =
 R"(| |    __  __   ____  _____  _  ____  __  _    | |
 | |   |  \/  | / () \|_   _|| |/ () \|  \| |   | |
 | |   |_|\/|_| \____/  |_|  |_|\____/|_|\__|   | |)";
-
-static const char* const SYS_GRAPHIC_TABLE_ARMING[] PROGMEM = {
-    NULL,
-    SYS_GRAPHIC_BANNER_ARMING0,
-    SYS_GRAPHIC_BANNER_ARMING1,
-    SYS_GRAPHIC_BANNER_ARMING2,
-    SYS_GRAPHIC_BANNER_ARMING3
-};

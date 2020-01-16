@@ -22,4 +22,4 @@
 // characters.                                                                //
 // ========================================================================== //
 
-#define SYSTEM_PASSWORD 21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d // password = Default
+#define SYSTEM_PASSWORD 46ba01f862cde3fab115f75550689216a7de7228b98476c29e7c19a27572315c // password = myg10project

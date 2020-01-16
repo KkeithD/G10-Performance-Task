@@ -25,7 +25,7 @@ uint8_t query_control() {
     if (_ctrl_pressed) {
         const uint64_t time_since = System::get_time() - _ctrl_last_press;
         if (time_since > SETTINGS_ARM_TIME_THRESH)
-            return (uint8_t) ((time_since - SETTINGS_ARM_TIME_THRESH) / SETTINGS_ARM_TICK_TIME);
+            return (uint8_t) ((time_since - SETTINGS_ARM_TIME_THRESH) / SETTINGS_ARM_TICK_TIME) + 1;
     }
     
     return 0;

@@ -22,7 +22,7 @@ void calib_sensors() {
 };
 
 bool get_motion_threat() {
-    _sen_last_light_lvl = _sen_light_lvl;
+    _sen_last_light_lvl = _sen_last_light_lvl*(1-SETTINGS_MOTION_SMOOTHING) + _sen_light_lvl*SETTINGS_MOTION_SMOOTHING;
     _sen_light_lvl = (double) System::read_analog_pin(PIN_MOTION_SENS);
     return (abs(_sen_light_lvl-_sen_last_light_lvl) > SETTINGS_MOTION_THRESH);
 };

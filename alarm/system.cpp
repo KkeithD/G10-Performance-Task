@@ -19,15 +19,14 @@
 #define INITIALIZE_PIN(name) pinMode(PIN_ ## name, PIN_MODE_ ## name);
 
 uint8_t       _sys_pass_hash[SHA256_BLOCK_SIZE];
-Sha256*       _sys_sha256_inst;
 
-uint8_t       _sys_state;
-uint8_t       _sys_threat_state;
-uint8_t       _sys_threat_level;
+uint8_t _sys_state;
+uint8_t _sys_threat_state;
+uint8_t _sys_threat_level;
 
-char*         _sys_msg;
-uint8_t       _sys_msg_len;
-bool          _sys_msg_ready;
+char*   _sys_msg;
+uint8_t _sys_msg_len;
+bool    _sys_msg_ready;
 
 void set_sys_state(uint8_t state) {
     _sys_state = state;
@@ -87,39 +86,81 @@ void operate_neutral() {
                 last_control_tick = 0;
                 
         while ((control_tick = query_control()) > 0) {
+            calib_sensors();
+            if(control_tick != last_control_tick) {
+                switch(control_tick) {
+                    case 1: write_alarm_graphic(SYS_GRAPHIC_BANNER_ARMING0, SYS_GRAPHIC_ALERT_EMPTY);  break;
+                    case 2: write_alarm_graphic(SYS_GRAPHIC_BANNER_ARMING1, SYS_GRAPHIC_ALERT_EMPTY);  break;
+                    case 3: write_alarm_graphic(SYS_GRAPHIC_BANNER_ARMING2, SYS_GRAPHIC_ALERT_EMPTY);  break;
+                    case 4: write_alarm_graphic(SYS_GRAPHIC_BANNER_ARMING3, SYS_GRAPHIC_ALERT_EMPTY);  break;
+                }
+            }
                 
-            if(control_tick != last_control_tick)
-                write_alarm_graphic(SYS_GRAPHIC_TABLE_ARMING[control_tick], SYS_GRAPHIC_ALERT_EMPTY);
             if (control_tick > SETTINGS_ARM_TICK_COUNT) {
                 reset_control();
                 set_sys_state(SYS_STATE_ARMED);
-                write_console("TRIGGERED");
                 break;
             }
             last_control_tick = control_tick;
         }
 
-        if (last_control_tick != 0) {
-            // ARMING CANCELLED
+        if (last_control_tick != 0 && control_tick == 0) {
+            uint64_t time_last = System::get_time();
+            
+            while (System::get_time() - time_last < 400)
+                calib_sensors();
+                
+            write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
+            
+            time_last = System::get_time();
+            while (System::get_time() - time_last < 400)
+                calib_sensors();
+                
+            write_alarm_graphic(SYS_GRAPHIC_BANNER_CANCELLED, SYS_GRAPHIC_ALERT_EMPTY);
+            time_last = System::get_time();
+
+            time_last = System::get_time();
+            while (System::get_time() - time_last < 400)
+                calib_sensors();
+            
+            write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
         }
+        calib_sensors();
     }
 };
 
+bool check_console_hash() {
+    uint8_t pass_hash[SHA256_BLOCK_SIZE];
 
+    SHA256_CTX ctx;
+        ctx.datalen = 0;
+        ctx.bitlen = 512;
+        
+    sha256_init(&ctx);
+    sha256_update(&ctx, _sys_msg, _sys_msg_len);
+    sha256_final(&ctx, pass_hash);
+
+    flush_console_msg();
+
+    return memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0;
+};
 
 bool check_console_seq() {
     const uint64_t time_last = System::get_time();
     while (System::get_time() - time_last < 400) {
         read_console_data();
         if (_sys_msg_ready) {
-            uint8_t pass_hash[SHA256_BLOCK_SIZE];
-          
-            _sys_sha256_inst->update((const BYTE*)_sys_msg, _sys_msg_len);
-            _sys_sha256_inst->final(pass_hash);            write_console(_sys_msg);
-            
-            return (memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0);
+            if (check_console_hash()) {
+                return true;
+            } else {
+                while (System::get_time() - time_last < 400) {
+                    calib_sensors();
+                }
+            } 
+            return false;
         }
     }
+    return false;
 };
 
 bool run_alarm_seq(const char* alert_graphic) {
@@ -140,17 +181,31 @@ bool run_alarm_seq(const char* alert_graphic) {
 
 void operate_armed() {
     for (int i=0; i<SETTINGS_ARMED_TICK_COUNT; i++) {
-        uint64_t last_time = System::get_time();
         alarm_play_tone(659); //e4, 5000hz
-        while (System::get_time() - last_time < SETTINGS_ARMED_TICK_TIME) {
+        
+        uint64_t last_time = System::get_time();
+        while (System::get_time() - last_time < SETTINGS_ARMED_TICK_TIME)
             calib_sensors();
-        }
         alarm_stop_tone();
+            
+        if (i == SETTINGS_ARMED_TICK_COUNT-1)
+            write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
     }
+    
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_ARMED, SYS_GRAPHIC_ALERT_EMPTY);
+    set_indicator_state(SYS_INDC_ON, SYS_INDC_ARMED);
     alarm_play_tone(147, 200); alarm_play_tone(185, 200); alarm_play_tone(220, 250); alarm_play_tone(147, 200);
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
+    calib_sensors();
 
     uint8_t threat_flag = SYS_THREAT_NONE;
-    while(get_sys_state() == SYS_STATE_ARMED) {
+    while (get_sys_state() == SYS_STATE_ARMED) {
+        read_console_data();
+        if (_sys_msg_ready) {
+            if (check_console_hash())
+                break;
+        }
+      
         if ((threat_flag & SYS_THREAT_MOTION) == 0 && get_motion_threat())
             threat_flag |= SYS_THREAT_MOTION;
             
@@ -159,21 +214,24 @@ void operate_armed() {
 
         if (threat_flag != SYS_THREAT_NONE) {
             if (run_alarm_seq(SYS_GRAPHIC_ALERT_THREAT)) break;
-
-            if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD) {
-                if (run_alarm_seq(SYS_GRAPHIC_ALERT_FLOOD)) break;
-            }
             
-            if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD) {
+            if ((threat_flag & SYS_THREAT_MOTION) == SYS_THREAT_MOTION)
+                if (run_alarm_seq(SYS_GRAPHIC_ALERT_MOTION)) break;
+            
+            if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD)
                 if (run_alarm_seq(SYS_GRAPHIC_ALERT_FLOOD)) break;
-            }
         }
     }
     set_sys_state(SYS_STATE_DISARMED);
 };
 
 void operate_disarmed() {
-    
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_DISARMED, SYS_GRAPHIC_ALERT_EMPTY);
+    set_indicator_state(SYS_INDC_ON, SYS_INDC_DISARMED);
+    alarm_play_tone(220, 200); alarm_play_tone(185, 200); alarm_play_tone(147, 250);
+    delay(500);
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
+    set_sys_state(SYS_STATE_NEUTRAL);
 };
 
 namespace System {
@@ -188,8 +246,7 @@ namespace System {
         _sys_state = SYS_STATE_INIT;
 
         __get_sys_pass_hash(_sys_pass_hash);
-        _sys_sha256_inst = new Sha256();
-
+        
         _sys_msg = new char[SETTINGS_MAX_MSG_LEN];
         _sys_msg_len = 0;
         _sys_msg_ready = false;
@@ -216,9 +273,8 @@ namespace System {
         for (int i=0; i<SETTINGS_INIT_NUM_STEPS; i++) {
             uint64_t last_time = get_time();
             alarm_play_tone(659); //e4, 5000hz
-            while (System::get_time() - last_time < SETTINGS_INIT_STEP_TIME) {
+            while (System::get_time() - last_time < SETTINGS_INIT_STEP_TIME)
                 calib_sensors();
-            }
             alarm_stop_tone();
             delay((i == SETTINGS_INIT_NUM_STEPS-1) ? 100 : 200);
         }
