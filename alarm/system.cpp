@@ -108,24 +108,33 @@ void operate_neutral() {
 
 
 bool check_console_seq() {
-    read_console_data();
-    if (_sys_msg_ready) {
-        uint8_t pass_hash[SHA256_BLOCK_SIZE];
-      
-        _sys_sha256_inst->update((const BYTE*)_sys_msg, _sys_msg_len);
-        _sys_sha256_inst->final(pass_hash);            write_console(_sys_msg);
-        
-        return (memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0);
+    const uint64_t time_last = System::get_time();
+    while (System::get_time() - time_last < 400) {
+        read_console_data();
+        if (_sys_msg_ready) {
+            uint8_t pass_hash[SHA256_BLOCK_SIZE];
+          
+            _sys_sha256_inst->update((const BYTE*)_sys_msg, _sys_msg_len);
+            _sys_sha256_inst->final(pass_hash);            write_console(_sys_msg);
+            
+            return (memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0);
+        }
     }
 };
 
 bool run_alarm_seq(const char* alert_graphic) {
     alarm_play_tone(5000);
     write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, alert_graphic);
-    delay(400);
+
+    //delay(400)
+    if (check_console_seq()) {
+        alarm_stop_tone();
+        return true;
+    }
+    
     alarm_stop_tone();
     write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
-    delay(400);
+    
     return check_console_seq();
 };
 
