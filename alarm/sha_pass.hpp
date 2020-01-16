@@ -4,9 +4,9 @@
 #include <stdlib.h> 
 #include <stdio.h>
 
-#include "../lib/sha256/sha256.hpp"
+#include "sha256.hpp"
 
-#include "../secure/pass.hpp"
+#include "secure/pass.hpp"
 
 #ifndef SYSTEM_PASSWORD
     #error "Password hash file has been corrupted and invalidated
@@ -22,8 +22,7 @@
 #define __wrap(name) #name
 #define wrap(name) __wrap(name)
 
-inline uint8_t* getSystemPass() {          
-    uint8_t sys_pass[SHA256_BLOCK_SIZE];
+inline void __get_sys_pass_hash(uint8_t sys_pass[]) {          
     const char* sys_hash = wrap(SYSTEM_PASSWORD);
 
     char hash_hex[2];
@@ -31,8 +30,6 @@ inline uint8_t* getSystemPass() {
         memcpy(hash_hex, sys_hash+i*2, 2);
         sys_pass[i] = static_cast<uint8_t>(strtol(hash_hex , NULL, 16));
     }
-
-    return sys_pass;
 }
 
 #undef wrap
