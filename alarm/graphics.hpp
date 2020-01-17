@@ -1,3 +1,36 @@
+/**
+ * 
+ *     /$$$$$$            /$$    /$$$$$$        /$$$$$$$  /$$$$$$$$ /$$$$$$$$
+ *    /$$__  $$         /$$$$   /$$$_  $$      | $$__  $$| $$_____/|__  $$__/
+ *   | $$  \__/        |_  $$  | $$$$\ $$      | $$  \ $$| $$         | $$   
+ *   | $$ /$$$$ /$$$$$$  | $$  | $$ $$ $$      | $$$$$$$/| $$$$$      | $$   
+ *   | $$|_  $$|______/  | $$  | $$\ $$$$      | $$____/ | $$__/      | $$   
+ *   | $$  \ $$          | $$  | $$ \ $$$      | $$      | $$         | $$   
+ *   |  $$$$$$/         /$$$$$$|  $$$$$$/      | $$      | $$         | $$   
+ *   \______/         |______/ \______/       |__/      |__/         |__/   
+ *   
+ *   By ~ Keith Davies.
+ *   
+ *   These are the graphics used in the serial monitor. They all
+ *   exist in PROGMEM, and take up about 1-2k bytes.
+ *   
+ *   When draw calls are made to the serial monitor, 
+ *   there are four main elements drawn to the monitor: 
+ *   BASE_TOP, BANNER, BASE_MID, ALERT, BASE_BOTTOM.
+ *   
+ *   The "BASE" graphics represent alarm structure and non-changing
+ *   graphical elements. 
+ *   
+ *   The "BANNER" graphics represent the first changeable graphical
+ *   element at the top of the alarm graphic. It's used for 
+ *   indicating whether or not the alarm is armed, disarmed etc.
+ *   
+ *   The "ALERT" graphics represent the large graphical elements
+ *   at the bottom of the alarm graphic. It's used for indicating
+ *   whether ot not there is a threat, and what type of threat there
+ *   is.
+ */
+
 #pragma once
 
 #include <avr/pgmspace.h>

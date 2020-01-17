@@ -1,10 +1,27 @@
+/**
+ * 
+ *     /$$$$$$            /$$    /$$$$$$        /$$$$$$$  /$$$$$$$$ /$$$$$$$$
+ *    /$$__  $$         /$$$$   /$$$_  $$      | $$__  $$| $$_____/|__  $$__/
+ *   | $$  \__/        |_  $$  | $$$$\ $$      | $$  \ $$| $$         | $$   
+ *   | $$ /$$$$ /$$$$$$  | $$  | $$ $$ $$      | $$$$$$$/| $$$$$      | $$   
+ *   | $$|_  $$|______/  | $$  | $$\ $$$$      | $$____/ | $$__/      | $$   
+ *   | $$  \ $$          | $$  | $$ \ $$$      | $$      | $$         | $$   
+ *   |  $$$$$$/         /$$$$$$|  $$$$$$/      | $$      | $$         | $$   
+ *   \______/         |______/ \______/       |__/      |__/         |__/   
+ *   
+ *   By ~ Keith Davies.
+ *   
+ *   This is the user control. It's responsible for handling user
+ *   control and button presses.
+ */
+
 #include <stdint.h>
 
 #include "control.hpp"
 
-#include "pin.hpp"
-#include "system.hpp"
 #include "settings.hpp"
+#include "system.hpp"
+#include "pin.hpp"
 
 bool     _ctrl_pressed;
 uint64_t _ctrl_last_press;

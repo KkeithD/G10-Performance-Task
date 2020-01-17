@@ -1,24 +1,48 @@
-#include <arduino.h>
-#include <avr/pgmspace.h>
+/**
+ * 
+ *     /$$$$$$            /$$    /$$$$$$        /$$$$$$$  /$$$$$$$$ /$$$$$$$$
+ *    /$$__  $$         /$$$$   /$$$_  $$      | $$__  $$| $$_____/|__  $$__/
+ *   | $$  \__/        |_  $$  | $$$$\ $$      | $$  \ $$| $$         | $$   
+ *   | $$ /$$$$ /$$$$$$  | $$  | $$ $$ $$      | $$$$$$$/| $$$$$      | $$   
+ *   | $$|_  $$|______/  | $$  | $$\ $$$$      | $$____/ | $$__/      | $$   
+ *   | $$  \ $$          | $$  | $$ \ $$$      | $$      | $$         | $$   
+ *   |  $$$$$$/         /$$$$$$|  $$$$$$/      | $$      | $$         | $$   
+ *   \______/         |______/ \______/       |__/      |__/         |__/   
+ *   
+ *   By ~ Keith Davies.
+ *   
+ *   This is the core system logic. All major program processies
+ *   are defined here.
+ *   
+ *   You may notice several blocks of code that utilize timing, interrupts
+ *   among other things. These are heavily compressed blocks of code used
+ *   to give the illusion of multi-threaded operations while operating on
+ *   a single thread. One code block may be updating the alarm graphic,
+ *   running a tone, checking for console input, etc.
+ */
 
 #include <string.h>
 #include <stdint.h>
-//#include "sha256.hpp"
 
-#include "graphics.hpp"
+#include <avr/pgmspace.h>
+#include <arduino.h>
 
-#include "sha_pass.hpp"
+#include "sha256.hpp"
+
 #include "system.hpp"
-#include "settings.hpp"
+
 #include "indicator.hpp"
+#include "settings.hpp"
+#include "graphics.hpp"
+#include "sha_pass.hpp"
 #include "control.hpp"
-#include "alarm.hpp"
 #include "sensor.hpp"
+#include "alarm.hpp"
 #include "pin.hpp"
 
 #define INITIALIZE_PIN(name) pinMode(PIN_ ## name, PIN_MODE_ ## name);
 
-uint8_t       _sys_pass_hash[SHA256_BLOCK_SIZE];
+uint8_t _sys_pass_hash[SHA256_BLOCK_SIZE];
 
 uint8_t _sys_state;
 uint8_t _sys_threat_state;
@@ -28,31 +52,38 @@ char*   _sys_msg;
 uint8_t _sys_msg_len;
 bool    _sys_msg_ready;
 
+// Sets system state
 void set_sys_state(uint8_t state) {
     _sys_state = state;
 };
 
+// Gets system state
 uint8_t get_sys_state() {
     return _sys_state;
 };
 
+// Writes character data to console
 inline void write_console(char* data) {
     Serial.println(data);
 };
 
+// Flushes console
 inline void flush_console() {
     Serial.println("\n");
     Serial.flush();
 };
 
+// Checks if console has data available
 inline bool is_console_available() {
     return Serial.available() > 0;
 };
 
+// Writes graphic to console
 inline void write_graphic(const char* graphic) {
     Serial.println((const __FlashStringHelper*) graphic);
 };
 
+// Writes alarm graphic to console
 void write_alarm_graphic(const char* banner_graphic, const char* alert_graphic) {
     flush_console();
     write_graphic(SYS_GRAPHIC_BASE_TOP);
@@ -62,6 +93,7 @@ void write_alarm_graphic(const char* banner_graphic, const char* alert_graphic) 
     write_graphic(SYS_GRAPHIC_BASE_BOTTOM);
 };
 
+// Reads and updates data from console
 void read_console_data() {
     while (is_console_available()) {
         const char data = (char) Serial.read();
@@ -75,11 +107,62 @@ void read_console_data() {
     }
 };
 
+// Flushes console message
 void flush_console_msg() {
     _sys_msg_ready = false;
     _sys_msg_len = 0;
 };
 
+bool check_console_hash() {
+    uint8_t pass_hash[SHA256_BLOCK_SIZE];
+
+    SHA256_CTX ctx;
+        ctx.datalen = 0;
+        ctx.bitlen = 512;
+        
+    sha256_init(&ctx);
+    sha256_update(&ctx, _sys_msg, _sys_msg_len);
+    sha256_final(&ctx, pass_hash);
+
+    flush_console_msg();
+
+    return memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0;
+};
+
+bool check_console_interrupt() {
+    const uint64_t time_last = System::get_time();
+    while (System::get_time() - time_last < 400) {
+        read_console_data();
+        if (_sys_msg_ready) {
+            if (check_console_hash()) {
+                return true;
+            } else {
+                while (System::get_time() - time_last < 400) {
+                    calib_sensors();
+                }
+            } 
+            return false;
+        }
+    }
+    return false;
+};
+
+bool run_alarm_seq(const char* alert_graphic) {
+    alarm_play_tone(5000);
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, alert_graphic);
+
+    if (check_console_interrupt()) {
+        alarm_stop_tone();
+        return true;
+    }
+    
+    alarm_stop_tone();
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
+    
+    return check_console_interrupt();
+};
+
+// Neutral operation state loop
 void operate_neutral() {
     while(get_sys_state() == SYS_STATE_NEUTRAL) {
         uint8_t control_tick = 0,
@@ -129,56 +212,6 @@ void operate_neutral() {
     }
 };
 
-bool check_console_hash() {
-    uint8_t pass_hash[SHA256_BLOCK_SIZE];
-
-    SHA256_CTX ctx;
-        ctx.datalen = 0;
-        ctx.bitlen = 512;
-        
-    sha256_init(&ctx);
-    sha256_update(&ctx, _sys_msg, _sys_msg_len);
-    sha256_final(&ctx, pass_hash);
-
-    flush_console_msg();
-
-    return memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0;
-};
-
-bool check_console_seq() {
-    const uint64_t time_last = System::get_time();
-    while (System::get_time() - time_last < 400) {
-        read_console_data();
-        if (_sys_msg_ready) {
-            if (check_console_hash()) {
-                return true;
-            } else {
-                while (System::get_time() - time_last < 400) {
-                    calib_sensors();
-                }
-            } 
-            return false;
-        }
-    }
-    return false;
-};
-
-bool run_alarm_seq(const char* alert_graphic) {
-    alarm_play_tone(5000);
-    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, alert_graphic);
-
-    //delay(400)
-    if (check_console_seq()) {
-        alarm_stop_tone();
-        return true;
-    }
-    
-    alarm_stop_tone();
-    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
-    
-    return check_console_seq();
-};
-
 void operate_armed() {
     for (int i=0; i<SETTINGS_ARMED_TICK_COUNT; i++) {
         alarm_play_tone(659); //e4, 5000hz
@@ -215,8 +248,14 @@ void operate_armed() {
         if (threat_flag != SYS_THREAT_NONE) {
             if (run_alarm_seq(SYS_GRAPHIC_ALERT_THREAT)) break;
             
-            if ((threat_flag & SYS_THREAT_MOTION) == SYS_THREAT_MOTION)
-                if (run_alarm_seq(SYS_GRAPHIC_ALERT_MOTION)) break;
+            if ((threat_flag & SYS_THREAT_MOTION) == SYS_THREAT_MOTION) {
+              if (run_alarm_seq(SYS_GRAPHIC_ALERT_MOTION)) break;
+              if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD) {
+                  if (run_alarm_seq(SYS_GRAPHIC_ALERT_THREAT)) break;
+                  if (run_alarm_seq(SYS_GRAPHIC_ALERT_FLOOD)) break;
+                  continue;
+              }
+            }
             
             if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD)
                 if (run_alarm_seq(SYS_GRAPHIC_ALERT_FLOOD)) break;

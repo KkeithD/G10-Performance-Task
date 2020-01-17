@@ -1,3 +1,20 @@
+/**
+ * 
+ *     /$$$$$$            /$$    /$$$$$$        /$$$$$$$  /$$$$$$$$ /$$$$$$$$
+ *    /$$__  $$         /$$$$   /$$$_  $$      | $$__  $$| $$_____/|__  $$__/
+ *   | $$  \__/        |_  $$  | $$$$\ $$      | $$  \ $$| $$         | $$   
+ *   | $$ /$$$$ /$$$$$$  | $$  | $$ $$ $$      | $$$$$$$/| $$$$$      | $$   
+ *   | $$|_  $$|______/  | $$  | $$\ $$$$      | $$____/ | $$__/      | $$   
+ *   | $$  \ $$          | $$  | $$ \ $$$      | $$      | $$         | $$   
+ *   |  $$$$$$/         /$$$$$$|  $$$$$$/      | $$      | $$         | $$   
+ *   \______/         |______/ \______/       |__/      |__/         |__/   
+ *   
+ *   By ~ Keith Davies.
+ *   
+ *   This is the indicator control. It's responsible for controlling the
+ *   LED indicators and ensuring they represent the correct armed state.
+ */
+
 #include "indicator.hpp"
 
 #include "system.hpp"

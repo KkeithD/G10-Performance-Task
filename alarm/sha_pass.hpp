@@ -1,7 +1,24 @@
+/**
+ * 
+ *     /$$$$$$            /$$    /$$$$$$        /$$$$$$$  /$$$$$$$$ /$$$$$$$$
+ *    /$$__  $$         /$$$$   /$$$_  $$      | $$__  $$| $$_____/|__  $$__/
+ *   | $$  \__/        |_  $$  | $$$$\ $$      | $$  \ $$| $$         | $$   
+ *   | $$ /$$$$ /$$$$$$  | $$  | $$ $$ $$      | $$$$$$$/| $$$$$      | $$   
+ *   | $$|_  $$|______/  | $$  | $$\ $$$$      | $$____/ | $$__/      | $$   
+ *   | $$  \ $$          | $$  | $$ \ $$$      | $$      | $$         | $$   
+ *   |  $$$$$$/         /$$$$$$|  $$$$$$/      | $$      | $$         | $$   
+ *   \______/         |______/ \______/       |__/      |__/         |__/   
+ *   
+ *   By ~ Keith Davies.
+ *   
+ *   This is an internal file meant to retrieve the sha256 hashed password
+ *   from "secure/pass.hpp" and convert it to a usable c type.
+ */
+
 #pragma once
 
-#include <stdint.h>
 #include <stdlib.h> 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "sha256.hpp"
@@ -9,14 +26,13 @@
 #include "secure/pass.hpp"
 
 #ifndef SYSTEM_PASSWORD
-    #error "Password hash file has been corrupted and invalidated
-            in some way. The file must define \"SYS_PASS_HASH\", and
-            it appears this value is missing. The file \"pass.hpp\"
-            should look like this.
-            
-                #define SYSTEM_PASSWORD a1cdf9b86be063bced6916eb4bb31d600f234
-                
-            Please fix password hash file before attempting compilation."
+    #error "Password hash file has been corrupted and invalidated \
+in some way. The file must define "SYS_PASS_HASH", and \
+it appears this value is missing. The file "pass.hpp" \
+should look like this. \
+\
+#define SYSTEM_PASSWORD a1cdf9b86be063bced6916eb4bb31d600f234 \
+
 #endif
 
 #define __wrap(name) #name
