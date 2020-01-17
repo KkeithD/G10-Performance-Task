@@ -113,6 +113,8 @@ void flush_console_msg() {
     _sys_msg_len = 0;
 };
 
+// Compares console password against machine password
+// and looks for a match.
 bool check_console_hash() {
     uint8_t pass_hash[SHA256_BLOCK_SIZE];
 
@@ -129,6 +131,9 @@ bool check_console_hash() {
     return memcmp(pass_hash, _sys_pass_hash, SHA256_BLOCK_SIZE) == 0;
 };
 
+// Queries the console for 400ms looking for a message.
+// If it finds one, it runs check_console_hash(). If there's 
+// a match, it interrupts whatever fuction is utilizing it.
 bool check_console_interrupt() {
     const uint64_t time_last = System::get_time();
     while (System::get_time() - time_last < 400) {
@@ -147,6 +152,13 @@ bool check_console_interrupt() {
     return false;
 };
 
+// Runs alarm sequence. This includes
+//    - Playing an alarm tone
+//    - Writing alarm graphics
+//    - Check console interrupts
+//
+// This is an example of code that gives the illusion
+// of multi-threaded processes
 bool run_alarm_seq(const char* alert_graphic) {
     alarm_play_tone(5000);
     write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, alert_graphic);
@@ -203,7 +215,7 @@ void operate_neutral() {
             time_last = System::get_time();
 
             time_last = System::get_time();
-            while (System::get_time() - time_last < 400)
+            while (System::get_time() - time_last < 800)
                 calib_sensors();
             
             write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
@@ -212,6 +224,7 @@ void operate_neutral() {
     }
 };
 
+// Armed operation state loop
 void operate_armed() {
     for (int i=0; i<SETTINGS_ARMED_TICK_COUNT; i++) {
         alarm_play_tone(659); //e4, 5000hz
@@ -241,9 +254,20 @@ void operate_armed() {
       
         if ((threat_flag & SYS_THREAT_MOTION) == 0 && get_motion_threat())
             threat_flag |= SYS_THREAT_MOTION;
-            
-        if ((threat_flag & SYS_THREAT_FLOOD) == 0 && get_flood_threat())
+
+        //if ((threat_flag & SYS_THREAT_FLOOD) == 0 && flood_threat)
+        //    threat_flag |= SYS_THREAT_FLOOD;
+
+        const bool flood_threat = get_flood_threat();
+        if ((threat_flag & SYS_THREAT_FLOOD) == 0 && flood_threat)
             threat_flag |= SYS_THREAT_FLOOD;
+        else if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD && !flood_threat) {
+            threat_flag ^= SYS_THREAT_FLOOD;
+            if (threat_flag == SYS_THREAT_NONE) {
+                set_sys_state(SYS_STATE_EXPIRED);
+                continue;
+            }
+        }
 
         if (threat_flag != SYS_THREAT_NONE) {
             if (run_alarm_seq(SYS_GRAPHIC_ALERT_THREAT)) break;
@@ -264,8 +288,19 @@ void operate_armed() {
     set_sys_state(SYS_STATE_DISARMED);
 };
 
+// Disarmed operation state loop
 void operate_disarmed() {
     write_alarm_graphic(SYS_GRAPHIC_BANNER_DISARMED, SYS_GRAPHIC_ALERT_EMPTY);
+    set_indicator_state(SYS_INDC_ON, SYS_INDC_DISARMED);
+    alarm_play_tone(220, 200); alarm_play_tone(185, 200); alarm_play_tone(147, 250);
+    delay(500);
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_EMPTY, SYS_GRAPHIC_ALERT_EMPTY);
+    set_sys_state(SYS_STATE_NEUTRAL);
+};
+
+// Disarmed operation state loop
+void operate_expired() {
+    write_alarm_graphic(SYS_GRAPHIC_BANNER_FLOOD_EXPIRED, SYS_GRAPHIC_ALERT_EMPTY);
     set_indicator_state(SYS_INDC_ON, SYS_INDC_DISARMED);
     alarm_play_tone(220, 200); alarm_play_tone(185, 200); alarm_play_tone(147, 250);
     delay(500);
@@ -329,7 +364,7 @@ namespace System {
         set_sys_state(SYS_STATE_NEUTRAL);
     };
 
-    void query() {
+    void update() {
         switch(get_sys_state()) {
             case SYS_STATE_NEUTRAL: {
                 operate_neutral();
@@ -342,6 +377,9 @@ namespace System {
             case SYS_STATE_DISARMED: {
                 operate_disarmed();
                 break;
+            }
+            case SYS_STATE_EXPIRED: {
+                operate_expired();
             }
         }
     }

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <Arduino.h>
 
 #include "sensor.hpp"
 
@@ -29,9 +30,15 @@
 double _sen_last_light_lvl;
 double _sen_light_lvl;
 
+uint64_t _sen_last_flood;
+bool     _sen_flood_expired;
+
 void init_sensors() {
     _sen_last_light_lvl = 0;
     _sen_light_lvl = 0;
+
+    _sen_last_flood = 0;
+    _sen_flood_expired = true;
 };
 
 void calib_sensors() {
@@ -46,5 +53,11 @@ bool get_motion_threat() {
 };
 
 bool get_flood_threat() {
-
-};
+    if(System::read_analog_pin(PIN_FLOOD_SENS) > SETTINGS_FLOOD_THRESH) {
+        _sen_last_flood = System::get_time();
+        _sen_flood_expired = false;
+    } else if (!_sen_flood_expired)
+        _sen_flood_expired = (System::get_time() - _sen_last_flood < SETTINGS_FLOOD_EXPIRE_TIME);
+    
+    return !_sen_flood_expired;
+};   

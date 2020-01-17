@@ -13,6 +13,9 @@
  *   
  *   This is the main Arudino ino file. It's responsible for defining base
  *   arduino functions.
+ *   
+ *   NOTE: Use 500 000 baud rate in the serial monitor, or whatever
+ *         SETTINGS_SERIAL_BAUD_RATE is set to internally.
  */
 
 #include <arduino.h>
@@ -27,5 +30,5 @@ void setup() {
 };
 
 void loop() {
-    System::query();
+    System::update();
 };

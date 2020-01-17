@@ -26,6 +26,7 @@
 #define SYS_STATE_NEUTRAL         0x1
 #define SYS_STATE_ARMED           0x2
 #define SYS_STATE_DISARMED        0x3
+#define SYS_STATE_EXPIRED         0x4
 
 #define SYS_THREAT_NONE           0x0
 #define SYS_THREAT_MOTION         0x1
@@ -52,9 +53,9 @@ namespace System {
         digitalWrite(pin, data);
     };
 
-    // Initializes system
+    // Initializes core system
     void initialize();
 
-    // Queries system
-    void query();
+    // Updates core system
+    void update();
 };

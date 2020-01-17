@@ -103,6 +103,9 @@ R"(| |                ALARM ARMED                 | |)";
 static const char SYS_GRAPHIC_BANNER_DISARMED[]PROGMEM =
 R"(| |               DISARMED ALARM               | |)";
 
+static const char SYS_GRAPHIC_BANNER_FLOOD_EXPIRED[] PROGMEM =
+R"(| |            FLOOD THREAT EXPIRED            | |)"; 
+
 
 
 static const char SYS_GRAPHIC_ALERT_EMPTY[] PROGMEM =
