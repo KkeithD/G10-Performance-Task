@@ -39,4 +39,4 @@
  *    characters.
  */
 
-#define SYSTEM_PASSWORD cf80cd8aed482d5d1527d7dc72fceff84e6326592848447d2dc0b0e87dfc9a90 * password = myg10project
+#define SYSTEM_PASSWORD cf80cd8aed482d5d1527d7dc72fceff84e6326592848447d2dc0b0e87dfc9a90 //password = myg10project
