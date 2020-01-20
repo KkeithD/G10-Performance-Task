@@ -263,10 +263,6 @@ void operate_armed() {
             threat_flag |= SYS_THREAT_FLOOD;
         else if ((threat_flag & SYS_THREAT_FLOOD) == SYS_THREAT_FLOOD && !flood_threat) {
             threat_flag ^= SYS_THREAT_FLOOD;
-            if (threat_flag == SYS_THREAT_NONE) {
-                set_sys_state(SYS_STATE_EXPIRED);
-                continue;
-            }
         }
 
         if (threat_flag != SYS_THREAT_NONE) {
