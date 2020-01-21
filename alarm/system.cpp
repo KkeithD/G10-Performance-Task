@@ -98,8 +98,9 @@ void read_console_data() {
     while (is_console_available()) {
         const char data = (char) Serial.read();
 
-        if (data == '\n' || _sys_msg_ready == SETTINGS_MAX_MSG_LEN) {
+        if (data == '\n' || _sys_msg_len == SETTINGS_MAX_MSG_LEN) {
             _sys_msg_ready = true;
+            break;
         } else {
             memcpy(_sys_msg+_sys_msg_len, &data, 1);
             _sys_msg_len++;
